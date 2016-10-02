@@ -1,11 +1,12 @@
 # tbl
 
+[![GoDoc](https://godoc.org/github.com/gdey/tbl?status.svg)](https://godoc.org/github.com/gdey/tbl).
+
 This is a simple package to help with table driven tests. Given a set
 of test cases, it will call the provided function each test case.
 
 This helps remove boiler plate that comes with writing table driven code.
 
-API [documentation](https://godoc.org/github.com/gdey/tbl).
 
 ## Example
 

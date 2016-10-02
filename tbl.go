@@ -15,6 +15,7 @@ import (
 
 var runorder = flag.String("tblTest.RunOrder", "", "List of comma seperated index of the test cases to run.")
 
+// Test holds the testcases.
 type Test struct {
 	cases []reflect.Value
 	vType reflect.Type
