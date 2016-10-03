@@ -7,6 +7,7 @@ package tbl
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -19,6 +20,9 @@ var runorder = flag.String("tblTest.RunOrder", "", "List of comma seperated inde
 type Test struct {
 	cases []reflect.Value
 	vType reflect.Type
+	// InOrder defines weather to run the test case in the order defined or randomly.
+	// This option is overridden by the tblTest.RunOrder command line flag.
+	InOrder bool
 }
 
 func panicF(format string, vals ...interface{}) {
@@ -129,6 +133,9 @@ func (tc *Test) Run(function interface{}) int {
 	default:
 		panicF("Expected there to be not out parameters or a boolean out parameter to test function.")
 	}
+	if len(tc.cases) == 0 {
+		return 0
+	}
 	// Now loop through the testcase and call the test function, check to see if we should stop or keep going.
 	count := 0
 	if idxs, ok := runOrder(); ok {
@@ -143,8 +150,19 @@ func (tc *Test) Run(function interface{}) int {
 		}
 		return count
 	}
-	for idx, testcase := range tc.cases {
+	if tc.InOrder {
+		for idx, testcase := range tc.cases {
+			count++
+			if !runTest(fn, idx, testcase, twoInParams, hasOutParam) {
+				break
+			}
+		}
+		return count
+	}
+	list := rand.Perm(len(tc.cases))
+	for _, idx := range list {
 		count++
+		testcase := tc.cases[idx]
 		if !runTest(fn, idx, testcase, twoInParams, hasOutParam) {
 			break
 		}

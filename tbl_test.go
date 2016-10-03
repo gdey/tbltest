@@ -34,12 +34,6 @@ func TestCases(t *testing.T) {
 		t.Errorf("did not run all the testcases.")
 	}
 
-	count = test.Run(func(tc testcase) bool {
-		return tc.next
-	})
-	if count != 2 {
-		t.Errorf("expected to only run two test. ran %v instead", count)
-	}
 	count = test.Run(func(idx int, tc testcase) {
 		if tc.val != idx {
 			t.Errorf("for test %v: expected %[1]v, got %v", idx, tc.val)
@@ -47,6 +41,14 @@ func TestCases(t *testing.T) {
 	})
 	if count != 3 {
 		t.Errorf("did not run all the testcases.")
+	}
+
+	test.InOrder = true
+	count = test.Run(func(tc testcase) bool {
+		return tc.next
+	})
+	if count != 2 {
+		t.Errorf("expected to only run two test. ran %v instead", count)
 	}
 	count = test.Run(func(idx int, tc testcase) bool {
 		if tc.val != idx {
