@@ -2,7 +2,7 @@
 // Use of this source code is governed by FreeBDS License (2-clause Simplified BSD.)
 // that can be found in the LICENSE file.
 
-package tbl
+package tbltest
 
 import (
 	"flag"

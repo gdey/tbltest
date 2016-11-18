@@ -2,12 +2,12 @@
 // Use of this source code is governed by FreeBDS License (2-clause Simplified BSD.)
 // that can be found in the LICENSE file.
 
-package tbl_test
+package tbltest_test
 
 import (
 	"testing"
 
-	"github.com/gdey/tbl"
+	"github.com/gdey/tbltest"
 )
 
 func TestCases(t *testing.T) {
@@ -15,7 +15,7 @@ func TestCases(t *testing.T) {
 		val  int
 		next bool
 	}
-	test := tbl.Cases(
+	test := tbltest.Cases(
 		testcase{
 			val:  0,
 			next: true,
@@ -62,7 +62,7 @@ func TestCases(t *testing.T) {
 }
 
 func TestIntCases(t *testing.T) {
-	test := tbl.Cases(0, 1, 2, 3)
+	test := tbltest.Cases(0, 1, 2, 3)
 	count := test.Run(func(tc int) {})
 	if count != 4 {
 		t.Errorf("did not run all the testcases.")

@@ -1,4 +1,4 @@
-# tbl
+# tbltest
 
 [![GoDoc](https://godoc.org/github.com/gdey/tbl?status.svg)](https://godoc.org/github.com/gdey/tbl).
 
@@ -13,7 +13,7 @@ This helps remove boiler plate that comes with writing table driven code.
 package main
 
 import (
-  "github.com/gdey/tbl"
+  "github.com/gdey/tbltest"
   "testing"
 )
 
@@ -31,7 +31,7 @@ func TestFoo(t *testing.T) {
     expected bool
   }
 
-  tests := tlb.Cases(
+  tests := tlbtest.Cases(
     testcase{
       foo:      "foo",
       expected: true,

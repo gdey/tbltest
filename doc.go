@@ -12,7 +12,7 @@
 //          last     string
 //          expected string
 //      }
-//      test := tbl.Cases(
+//      test := tbltest.Cases(
 //          testcase{
 //              first    : "Gautam",
 //              last     : "Dey",
@@ -29,4 +29,4 @@
 //  The function provided to run is called for each testcase in the cases.
 //  If the function provided returns a boolean, the return value will be used to
 //  determine weather or not to continue onto the next testcase.
-package tbl
+package tbltest
