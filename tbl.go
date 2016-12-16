@@ -7,6 +7,7 @@ package tbltest
 import (
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"reflect"
 	"runtime"
@@ -25,7 +26,7 @@ type Test struct {
 	InOrder bool
 }
 
-func panicF(format string, vals ...interface{}) {
+func panicf(format string, vals ...interface{}) {
 	pc, _, _, ok := runtime.Caller(2)
 	details := runtime.FuncForPC(pc)
 	var callSite string
@@ -33,6 +34,16 @@ func panicF(format string, vals ...interface{}) {
 		callSite = fmt.Sprintf("Called from %v: ", details.Name())
 	}
 	panic(fmt.Sprintf(callSite+format, vals...))
+}
+
+func logf(format string, vals ...interface{}) {
+	pc, _, _, ok := runtime.Caller(2)
+	details := runtime.FuncForPC(pc)
+	var callSite string
+	if ok && details != nil {
+		callSite = fmt.Sprintf("Called from %v: ", details.Name())
+	}
+	log.Printf(callSite+format, vals...)
 }
 
 func runOrder() (idx []int, ok bool) {
@@ -56,14 +67,14 @@ func Cases(testcases ...interface{}) *Test {
 	for i, tcase := range testcases {
 		val := reflect.ValueOf(tcase)
 		if val.Kind() == reflect.Invalid {
-			panicF("Testcase %v is not a valid test case.", i)
+			panicf("Testcase %v is not a valid test case.", i)
 		}
 		// The first element determines that type of the rest of the elements.
 		if tc.vType == nil {
 			tc.vType = val.Type()
 		} else {
 			if val.Type() != tc.vType {
-				panicF("Testcases should be of type %v, but element %v is of type %v.", tc.vType, i, val.Type())
+				panicf("Testcases should be of type %v, but element %v is of type %v.", tc.vType, i, val.Type())
 			}
 		}
 		tc.cases = append(tc.cases, val)
@@ -84,6 +95,28 @@ func runTest(fn reflect.Value, idx int, testcase reflect.Value, tp bool, r bool)
 	return true
 }
 
+func runTests(list []int, fn reflect.Value, cases []reflect.Value, tp bool, r bool) int {
+	count := 0
+	for _, idx := range list {
+		if idx < 0 || idx >= len(cases) {
+			logf("Encountered invalid index %v, skipping.", idx)
+			continue
+		}
+		count++
+		if !runTest(fn, idx, cases[idx], tp, r) {
+			break
+		}
+	}
+	return count
+}
+
+func seq(n int) (idxs []int) {
+	for i := 0; i < n; i++ {
+		idxs = append(idxs, i)
+	}
+	return idxs
+}
+
 // Run calls the given function for each test case. (Note the function may be called again with the same testcase, if the tblTest.RunOrder option is specified.)
 // The function must take one of four forms.
 //
@@ -100,7 +133,7 @@ func (tc *Test) Run(function interface{}) int {
 	fnType := fn.Type()
 
 	if fnType.Kind() != reflect.Func {
-		panicF("Was not provided a function.")
+		panicf("Was not provided a function.")
 	}
 	// Check the paramaters.
 	var twoInParams bool
@@ -109,63 +142,39 @@ func (tc *Test) Run(function interface{}) int {
 	// If there is only one parameter then it should of the test case type.
 	case 1:
 		if fnType.In(0) != tc.vType {
-			panicF("Incorrect parameter for test function given. Was given %v, expected it to be %v", fnType.In(0), tc.vType)
+			panicf("Incorrect parameter for test function given. Was given %v, expected it to be %v", fnType.In(0), tc.vType)
 		}
 	case 2:
 		if fnType.In(0) != reflect.TypeOf(int(1)) {
-			panicF("Incorrect parameter one for test function given. Was given %v, expected it to be int", fnType.In(0))
+			panicf("Incorrect parameter one for test function given. Was given %v, expected it to be int", fnType.In(0))
 		}
 		if fnType.In(1) != tc.vType {
-			panicF("Incorrect parameter two for test function given. Was given %v, expected it to be %v", fnType.In(0), tc.vType)
+			panicf("Incorrect parameter two for test function given. Was given %v, expected it to be %v", fnType.In(0), tc.vType)
 		}
 		twoInParams = true
 	default:
-		panicF("Incorrect number of parameters given. Expect the funtion to take one of two forms. func(idx int, testcase $T) or func(testcase $T)")
+		panicf("Incorrect number of parameters given. Expect the funtion to take one of two forms. func(idx int, testcase $T) or func(testcase $T)")
 	}
 	switch fnType.NumOut() {
 	case 0:
 	// Nothing to do.
 	case 1:
 		if fnType.Out(0) != reflect.TypeOf(true) {
-			panicF("Expected out parameter of test function to be a boolean. Was given %v", fnType.Out(0))
+			panicf("Expected out parameter of test function to be a boolean. Was given %v", fnType.Out(0))
 		}
 		hasOutParam = true
 	default:
-		panicF("Expected there to be not out parameters or a boolean out parameter to test function.")
+		panicf("Expected there to be not out parameters or a boolean out parameter to test function.")
 	}
 	if len(tc.cases) == 0 {
 		return 0
 	}
 	// Now loop through the testcase and call the test function, check to see if we should stop or keep going.
-	count := 0
 	if idxs, ok := runOrder(); ok {
-		for _, idx := range idxs {
-			if idx < 0 || idx >= len(tc.cases) {
-				continue
-			}
-			count++
-			if !runTest(fn, idx, tc.cases[idx], twoInParams, hasOutParam) {
-				break
-			}
-		}
-		return count
+		return runTests(idxs, fn, tc.cases, twoInParams, hasOutParam)
 	}
 	if tc.InOrder {
-		for idx, testcase := range tc.cases {
-			count++
-			if !runTest(fn, idx, testcase, twoInParams, hasOutParam) {
-				break
-			}
-		}
-		return count
+		return runTests(seq(len(tc.cases)), fn, tc.cases, twoInParams, hasOutParam)
 	}
-	list := rand.Perm(len(tc.cases))
-	for _, idx := range list {
-		count++
-		testcase := tc.cases[idx]
-		if !runTest(fn, idx, testcase, twoInParams, hasOutParam) {
-			break
-		}
-	}
-	return count
+	return runTests(rand.Perm(len(tc.cases)), fn, tc.cases, twoInParams, hasOutParam)
 }
