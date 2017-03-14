@@ -1,6 +1,6 @@
 # tbltest
 
-[![GoDoc](https://godoc.org/github.com/gdey/tbl?status.svg)](https://godoc.org/github.com/gdey/tbl).
+[![GoDoc](https://godoc.org/github.com/gdey/tbl?status.svg)](https://godoc.org/github.com/gdey/tbl) [![Build Status](https://travis-ci.org/gdey/tbltest.svg?branch=master)](https://travis-ci.org/gdey/tbltest)
 
 This is a simple package to help with table driven tests. Given a set
 of test cases, it will call the provided function each test case.
