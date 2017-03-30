@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -144,6 +145,12 @@ func seq(n int) (idxs []int) {
 //    *  `func (idx int, tc $testcase) bool`
 //
 func (tc *Test) Run(function TestFunc) int {
+
+	if function == nil {
+		fmt.Fprintf(os.Stderr, "WARNING: on %v : Run called with nil function, skipping", MyCallerFileLine())
+		return 0
+	}
+
 	fn := reflect.ValueOf(function)
 	fnType := fn.Type()
 

@@ -68,3 +68,14 @@ func TestIntCases(t *testing.T) {
 		t.Errorf("did not run all the testcases.")
 	}
 }
+
+func TestNilFunc(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("Failed to run nil fun function: %v", r)
+		}
+	}()
+	type testcase struct{}
+	test := tbltest.Cases(testcase{}, testcase{})
+	test.Run(nil)
+}
