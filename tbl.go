@@ -191,22 +191,24 @@ func (tc *Test) Run(function TestFunc) int {
 	if len(tc.cases) == 0 {
 		return 0
 	}
-	// Now loop through the testcase and call the test function, check to see if we should stop or keep going.
-	if idxs, ok := tc.runOrder(); ok {
-		return runTests(idxs, fn, tc.cases, twoInParams, hasOutParam)
-	}
-	if tc.InOrder {
-		return runTests(seq(len(tc.cases)), fn, tc.cases, twoInParams, hasOutParam)
-	}
-	return runTests(rand.Perm(len(tc.cases)), fn, tc.cases, twoInParams, hasOutParam)
+	// Now loop through the test cases and call the test function, check to see if we should stop or keep going.
+	return runTests(tc.runOrder(), fn, tc.cases, twoInParams, hasOutParam)
 }
 
-func (tc *Test) runOrder() (idx []int, ok bool) {
+func (tc *Test) runOrder() []int {
+
 	if runorder != nil && *runorder != "" {
-		return runOrder(*runorder)
+		if idxs, ok := runOrder(*runorder); ok {
+			return idxs
+		}
 	}
 	if tc.RunOrder != "" {
-		return runOrder(tc.RunOrder)
+		if idxs, ok := runOrder(tc.RunOrder); ok {
+			return idxs
+		}
 	}
-	return idx, false
+	if tc.InOrder {
+		return seq(len(tc.cases))
+	}
+	return rand.Perm(len(tc.cases))
 }
