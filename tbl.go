@@ -195,6 +195,27 @@ func (tc *Test) Run(function TestFunc) int {
 	return runTests(tc.runOrder(), fn, tc.cases, twoInParams, hasOutParam)
 }
 
+// AddCases takes a list of test cases to use for the table driven tests. It is added to the current list of tests.
+//   The test cases can be any type, as long as they are ALL the tests are of the same type, this included any tests declared
+// in the Cases methods to create the test object.
+func (tc *Test) AddCases(testcases ...TestCase) {
+	for i, tcase := range testcases {
+		val := reflect.ValueOf(tcase)
+		if val.Kind() == reflect.Invalid {
+			panicf("Testcase %v is not a valid test case.", i)
+		}
+		// The first element determines that type of the rest of the elements.
+		if tc.vType == nil {
+			tc.vType = val.Type()
+		} else {
+			if val.Type() != tc.vType {
+				panicf("Testcases should be of type %v, but element %v is of type %v.", tc.vType, i, val.Type())
+			}
+		}
+		tc.cases = append(tc.cases, val)
+	}
+}
+
 func (tc *Test) runOrder() []int {
 
 	if runorder != nil && *runorder != "" {

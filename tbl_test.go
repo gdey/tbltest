@@ -24,6 +24,8 @@ func TestCases(t *testing.T) {
 			val:  1,
 			next: false,
 		},
+	)
+	test.AddCases(
 		testcase{
 			val:  2,
 			next: true,
