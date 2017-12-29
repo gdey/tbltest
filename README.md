@@ -1,3 +1,35 @@
+With the upcoming release of 1.10 being release, and 1.7 introducing subtests, I think it is better to no longer use this package and instead do the following:
+
+```
+func TestFoo(t *testing.T) {
+  type testCase struct {
+    foo       string
+    expected  bool
+  }
+
+  tests := map[string]testCase{
+    "foo": testCase{
+      foo:      "foo",
+      expected: true,
+    },
+    "bar" : testcase{
+      foo:      "bar",
+      expected: false,
+    },
+  }
+
+  for name, tc := range tests {
+    tc := tc // make a copy of the tc
+    t.Run( name, func(t *testing.T){
+      if Foo(tc.foo) != tc.expected {
+        t.FailNow()
+      }
+    })
+  }
+}
+```
+In order only run a pictular test use: `-run "TestFoo/foo"`
+
 # tbltest
 
 [![GoDoc](https://godoc.org/github.com/gdey/tbl?status.svg)](https://godoc.org/github.com/gdey/tbl) [![Build Status](https://travis-ci.org/gdey/tbltest.svg?branch=master)](https://travis-ci.org/gdey/tbltest)
