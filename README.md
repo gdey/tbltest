@@ -2,32 +2,36 @@ With the upcoming release of 1.10 being release, and 1.7 introducing subtests, I
 
 ```
 func TestFoo(t *testing.T) {
-  type testCase struct {
-    foo       string
-    expected  bool
-  }
+	type testCase struct {
+		foo      string
+		expected bool
+	}
 
-  tests := map[string]testCase{
-    "foo": testCase{
-      foo:      "foo",
-      expected: true,
-    },
-    "bar" : testcase{
-      foo:      "bar",
-      expected: false,
-    },
-  }
+	fn := func(tc testCase) func(t *testing.T) {
+		return func(t *testing.T) {
+			if Foo(tc.foo) != tc.expected {
+				t.FailNow()
+			}
+		}
+	}
 
-  for name, tc := range tests {
-    tc := tc // make a copy of the tc
-    t.Run( name, func(t *testing.T){
-      if Foo(tc.foo) != tc.expected {
-        t.FailNow()
-      }
-    })
-  }
+	tests := map[string]testCase{
+		"foo": testCase{
+			foo:      "foo",
+			expected: true,
+		},
+		"bar": testcase{
+			foo:      "bar",
+			expected: false,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, fn(tc))
+	}
 }
 ```
+[In Play](https://play.golang.org/p/SMJJ-wYuydp)
 In order only run a pictular test use: `-run "TestFoo/foo"`
 
 # tbltest
