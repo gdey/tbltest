@@ -1,6 +1,6 @@
 With the upcoming release of 1.10 being release, and 1.7 introducing subtests, I think it is better to no longer use this package and instead do the following:
 
-```
+```go
 package test
 
 import "testing"
